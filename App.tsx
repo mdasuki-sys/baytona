@@ -19,21 +19,17 @@ const CATEGORY_PLACEHOLDERS: Record<string, string> = {
 
 // Special Async Image Component for GenAI or Static URL
 const GenAIImage = ({ query, imageUrl, alt, className, priority = false, category }: { query: string, imageUrl?: string, alt: string, className?: string, priority?: boolean, category?: string }) => {
-  // If static URL is provided, prefer it immediately.
   const initialSrc = imageUrl || getMemoryCachedImage(query);
   const [src, setSrc] = useState<string | null>(initialSrc);
   const [loading, setLoading] = useState(!initialSrc);
-  const [error, setError] = useState(false);
 
   useEffect(() => {
-    // If we have a hardcoded URL, no need to fetch or check cache.
     if (imageUrl) {
-        setSrc(imageUrl);
-        setLoading(false);
-        return;
+      setSrc(imageUrl);
+      setLoading(false);
+      return;
     }
 
-    // If we already have the image from initial state (memory cache), do nothing unless query changed
     if (src && getMemoryCachedImage(query) === src) return;
 
     let active = true;
@@ -41,21 +37,18 @@ const GenAIImage = ({ query, imageUrl, alt, className, priority = false, categor
     const fetchImage = async () => {
       try {
         setLoading(true);
-        // generateFoodImage checks memory -> IDB -> Queue
         const generatedUrl = await generateFoodImage(query);
-        
+
         if (active) {
           if (generatedUrl) {
             setSrc(generatedUrl);
           } else {
-            // Use fallback if generation returns null (error or no key)
             const fallback = (category && CATEGORY_PLACEHOLDERS[category]) || CATEGORY_PLACEHOLDERS['default'];
             setSrc(fallback);
           }
         }
       } catch (e) {
         if (active) {
-          // Use fallback on catastrophic error
           const fallback = (category && CATEGORY_PLACEHOLDERS[category]) || CATEGORY_PLACEHOLDERS['default'];
           setSrc(fallback);
         }
@@ -67,7 +60,7 @@ const GenAIImage = ({ query, imageUrl, alt, className, priority = false, categor
     fetchImage();
 
     return () => { active = false; };
-  }, [query, category, imageUrl]); 
+  }, [query, category, imageUrl]);
 
   if (loading) {
     return (
@@ -77,21 +70,20 @@ const GenAIImage = ({ query, imageUrl, alt, className, priority = false, categor
     );
   }
 
-  // Fallback check if for some reason src is still missing after loading
   const displaySrc = src || (category && CATEGORY_PLACEHOLDERS[category]) || CATEGORY_PLACEHOLDERS['default'];
 
   return (
-    <img 
-      src={displaySrc} 
-      alt={alt} 
+    <img
+      src={displaySrc}
+      alt={alt}
       className={`${className} transition-opacity duration-700 ease-in-out ${loading ? 'opacity-0' : 'opacity-100'}`}
       loading="lazy"
     />
   );
 };
 
-const Hero = ({ orderType, setOrderType, onSearch }: { 
-  orderType: OrderType; 
+const Hero = ({ orderType, setOrderType, onSearch }: {
+  orderType: OrderType;
   setOrderType: (t: OrderType) => void;
   onSearch: (q: string) => void;
 }) => {
@@ -106,9 +98,8 @@ const Hero = ({ orderType, setOrderType, onSearch }: {
   return (
     <div className="relative w-full text-white overflow-hidden rounded-b-3xl shadow-lg z-10 bg-stone-900 min-h-[300px]">
       <div className="absolute inset-0 z-0">
-         {/* Using user provided image */}
-        <img 
-          src="https://i.ibb.co/JwBB2BDj/1000578035.png" 
+        <img
+          src="https://i.ibb.co/JwBB2BDj/1000578035.png"
           className="w-full h-full object-cover opacity-60"
           alt="Baytouna Hero"
         />
@@ -116,38 +107,36 @@ const Hero = ({ orderType, setOrderType, onSearch }: {
       </div>
 
       <div className="relative z-10 pt-12 pb-8 px-6 flex flex-col items-center">
-        <h1 className="font-display text-4xl md:text-5xl tracking-wide mb-2 text-center text-cream">
+        <h1 className="font-display text-4xl md:text-5xl tracking-wide mb-2 text-center text-white">
           Baytouna
         </h1>
-        <p className="text-stone-300 font-sans text-sm tracking-widest uppercase mb-8 opacity-90">
+        <p className="text-stone-200 font-sans text-sm tracking-widest uppercase mb-8 opacity-90">
           Resto & Express
         </p>
 
-        {/* Search Bar - transitions to sticky in parent but visual here */}
         <div className={`w-full max-w-md relative transition-all duration-300 ${scrolled ? 'scale-95 opacity-0 h-0 overflow-hidden' : 'scale-100 opacity-100 h-12 mb-8'}`}>
           <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-            <Search className="h-5 w-5 text-stone-400" />
+            <Search className="h-5 w-5 text-stone-300" />
           </div>
           <input
             type="text"
             placeholder="Search for hummus, tawook..."
             onChange={(e) => onSearch(e.target.value)}
-            className="w-full h-full pl-12 pr-4 bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-white placeholder-stone-300 focus:outline-none focus:bg-white/20 transition-all font-sans"
+            className="w-full h-full pl-12 pr-4 bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-white placeholder-stone-200 focus:outline-none focus:bg-white/20 transition-all font-sans"
           />
         </div>
 
-        {/* Toggles */}
         <div className="flex p-1 bg-white/10 backdrop-blur-md rounded-full border border-white/10 relative">
-          <div className={`absolute top-1 bottom-1 w-[calc(50%-4px)] bg-primary rounded-full transition-all duration-300 shadow-md ${orderType === 'Pickup' ? 'translate-x-[calc(100%+4px)]' : 'left-1'}`} />
-          <button 
+          <div className={`absolute top-1 bottom-1 w-[calc(50%-4px)] bg-[#35502F] rounded-full transition-all duration-300 shadow-md ${orderType === 'Pickup' ? 'translate-x-[calc(100%+4px)]' : 'left-1'}`} />
+          <button
             onClick={() => setOrderType('Delivery')}
-            className={`relative z-10 px-6 py-2 rounded-full text-sm font-medium transition-colors duration-200 flex items-center gap-2 ${orderType === 'Delivery' ? 'text-white' : 'text-stone-300 hover:text-white'}`}
+            className={`relative z-10 px-6 py-2 rounded-full text-sm font-medium transition-colors duration-200 flex items-center gap-2 ${orderType === 'Delivery' ? 'text-white' : 'text-stone-200 hover:text-white'}`}
           >
             <Truck size={16} /> Delivery
           </button>
-          <button 
+          <button
             onClick={() => setOrderType('Pickup')}
-            className={`relative z-10 px-6 py-2 rounded-full text-sm font-medium transition-colors duration-200 flex items-center gap-2 ${orderType === 'Pickup' ? 'text-white' : 'text-stone-300 hover:text-white'}`}
+            className={`relative z-10 px-6 py-2 rounded-full text-sm font-medium transition-colors duration-200 flex items-center gap-2 ${orderType === 'Pickup' ? 'text-white' : 'text-stone-200 hover:text-white'}`}
           >
             <ShoppingBag size={16} /> Pickup
           </button>
@@ -166,8 +155,8 @@ const CategoryNav = ({ activeCategory, onSelect }: { activeCategory: string; onS
             key={cat}
             onClick={() => onSelect(cat)}
             className={`px-5 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
-              activeCategory === cat 
-                ? 'bg-black text-white shadow-md transform scale-105' 
+              activeCategory === cat
+                ? 'bg-black text-white shadow-md transform scale-105'
                 : 'bg-white text-stone-700 border border-stone-200 hover:border-black/30 hover:bg-black/5'
             }`}
           >
@@ -180,34 +169,34 @@ const CategoryNav = ({ activeCategory, onSelect }: { activeCategory: string; onS
 };
 
 const MenuCard: React.FC<{ item: MenuItem; onClick: () => void }> = ({ item, onClick }) => {
-  const displayPrice = item.variants && item.variants.length > 0 
-    ? item.variants[0].price 
+  const displayPrice = item.variants && item.variants.length > 0
+    ? item.variants[0].price
     : item.price;
-  
+
   const hasVariants = item.variants && item.variants.length > 0;
 
   return (
-    <div 
+    <div
       onClick={onClick}
       className="group bg-white rounded-2xl p-0 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden cursor-pointer transform hover:-translate-y-1 relative"
     >
       <div className="relative h-40 overflow-hidden bg-stone-100">
-        <GenAIImage 
-          query={item.imageQuery} 
+        <GenAIImage
+          query={item.imageQuery}
           imageUrl={item.imageUrl}
           alt={item.name}
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
           category={item.category}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-60" />
-        <div className="absolute bottom-3 right-3 bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-lg hover:bg-primary hover:text-white transition-colors duration-300">
+        <div className="absolute bottom-3 right-3 bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-lg hover:bg-[#35502F] hover:text-white transition-colors duration-300">
           <Plus size={18} />
         </div>
       </div>
-      
+
       <div className="p-4">
         <div className="flex justify-between items-start mb-1">
-          <h3 className="font-serif text-lg font-bold text-stone-800 leading-tight group-hover:text-primary transition-colors">
+          <h3 className="font-serif text-lg font-bold text-stone-800 leading-tight group-hover:text-[#35502F] transition-colors">
             {item.name}
           </h3>
         </div>
@@ -226,17 +215,16 @@ const MenuCard: React.FC<{ item: MenuItem; onClick: () => void }> = ({ item, onC
   );
 };
 
-const ItemModal = ({ item, isOpen, onClose, onAddToCart }: { 
-  item: MenuItem | null; 
-  isOpen: boolean; 
-  onClose: () => void; 
+const ItemModal = ({ item, isOpen, onClose, onAddToCart }: {
+  item: MenuItem | null;
+  isOpen: boolean;
+  onClose: () => void;
   onAddToCart: (cartItem: CartItem) => void;
 }) => {
   const [quantity, setQuantity] = useState(1);
   const [selectedVariant, setSelectedVariant] = useState<Variant | null>(null);
   const [notes, setNotes] = useState('');
-  
-  // Reset state when item opens
+
   useEffect(() => {
     if (isOpen && item) {
       setQuantity(1);
@@ -269,11 +257,11 @@ const ItemModal = ({ item, isOpen, onClose, onAddToCart }: {
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center pointer-events-none">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm pointer-events-auto transition-opacity duration-300" onClick={onClose} />
-      
+
       <div className="bg-[#F9F8F4] w-full max-w-lg md:rounded-2xl rounded-t-3xl shadow-2xl pointer-events-auto transform transition-transform duration-300 animate-slide-up max-h-[90vh] overflow-y-auto no-scrollbar">
         <div className="relative h-64 bg-stone-100">
-          <GenAIImage 
-            query={item.imageQuery} 
+          <GenAIImage
+            query={item.imageQuery}
             imageUrl={item.imageUrl}
             alt={item.name}
             className="w-full h-full object-cover"
@@ -281,7 +269,7 @@ const ItemModal = ({ item, isOpen, onClose, onAddToCart }: {
             category={item.category}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-[#F9F8F4] to-transparent" />
-          <button 
+          <button
             onClick={onClose}
             className="absolute top-4 right-4 bg-white/80 backdrop-blur rounded-full p-2 shadow-sm text-stone-800 hover:bg-white"
           >
@@ -293,18 +281,17 @@ const ItemModal = ({ item, isOpen, onClose, onAddToCart }: {
           <div className="flex justify-between items-start">
             <div>
               <h2 className="font-display text-3xl font-bold text-stone-800 mb-1">{item.name}</h2>
-              {item.nameAr && <p className="text-lg text-primary font-serif">{item.nameAr}</p>}
+              {item.nameAr && <p className="text-lg text-[#35502F] font-serif">{item.nameAr}</p>}
             </div>
-            <div className="text-xl font-bold font-sans bg-white px-3 py-1 rounded-lg shadow-sm text-primary">
+            <div className="text-xl font-bold font-sans bg-white px-3 py-1 rounded-lg shadow-sm text-[#35502F]">
               {formatCurrency(currentPrice)}
             </div>
           </div>
-          
+
           <p className="text-stone-500 mt-4 leading-relaxed font-sans">
             {item.description}
           </p>
 
-          {/* Variants */}
           {item.variants && item.variants.length > 0 && (
             <div className="mt-6">
               <h3 className="font-semibold text-stone-800 mb-3 text-sm uppercase tracking-wide">Size Option</h3>
@@ -315,8 +302,8 @@ const ItemModal = ({ item, isOpen, onClose, onAddToCart }: {
                     onClick={() => setSelectedVariant(v)}
                     className={`flex-1 py-3 px-4 rounded-xl text-sm font-medium transition-all border ${
                       selectedVariant?.name === v.name
-                        ? 'bg-primary text-white border-primary shadow-md'
-                        : 'bg-white text-stone-600 border-stone-200 hover:border-primary/50'
+                        ? 'bg-[#35502F] text-white border-[#35502F] shadow-md'
+                        : 'bg-white text-stone-700 border-stone-200 hover:border-[#35502F]/50'
                     }`}
                   >
                     <div className="flex justify-between w-full">
@@ -329,7 +316,6 @@ const ItemModal = ({ item, isOpen, onClose, onAddToCart }: {
             </div>
           )}
 
-          {/* Notes */}
           <div className="mt-6">
             <h3 className="font-semibold text-stone-800 mb-2 text-sm uppercase tracking-wide flex items-center gap-2">
               Special Instructions <span className="text-stone-400 font-normal normal-case text-xs">(Optional)</span>
@@ -338,32 +324,31 @@ const ItemModal = ({ item, isOpen, onClose, onAddToCart }: {
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="e.g. No onions, extra garlic..."
-              className="w-full bg-white border border-stone-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all resize-none"
+              className="w-full bg-white border border-stone-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-[#35502F]/20 focus:border-[#35502F] outline-none transition-all resize-none"
               rows={2}
             />
           </div>
 
-          {/* Quantity & Add */}
           <div className="mt-8 flex items-center gap-4">
             <div className="flex items-center bg-white border border-stone-200 rounded-full px-2 py-1 shadow-sm">
-              <button 
+              <button
                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                className="w-10 h-10 flex items-center justify-center text-stone-600 hover:text-primary active:scale-90 transition-transform"
+                className="w-10 h-10 flex items-center justify-center text-stone-600 hover:text-[#35502F] active:scale-90 transition-transform"
               >
                 <Minus size={18} />
               </button>
               <span className="w-8 text-center font-bold text-lg text-stone-800">{quantity}</span>
-              <button 
+              <button
                 onClick={() => setQuantity(quantity + 1)}
-                className="w-10 h-10 flex items-center justify-center text-stone-600 hover:text-primary active:scale-90 transition-transform"
+                className="w-10 h-10 flex items-center justify-center text-stone-600 hover:text-[#35502F] active:scale-90 transition-transform"
               >
                 <Plus size={18} />
               </button>
             </div>
-            
-            <button 
+
+            <button
               onClick={handleAdd}
-              className="flex-1 bg-primary text-white py-4 rounded-full font-bold shadow-lg shadow-primary/30 hover:shadow-primary/50 active:scale-[0.98] transition-all flex justify-between px-6"
+              className="flex-1 bg-[#35502F] text-white py-4 rounded-full font-bold shadow-lg shadow-black/10 hover:shadow-black/20 active:scale-[0.98] transition-all flex justify-between px-6"
             >
               <span>Add to Order</span>
               <span>{formatCurrency(totalPrice)}</span>
@@ -375,15 +360,15 @@ const ItemModal = ({ item, isOpen, onClose, onAddToCart }: {
   );
 };
 
-const CartDrawer = ({ 
-  isOpen, 
-  onClose, 
-  cart, 
-  onUpdateQuantity, 
+const CartDrawer = ({
+  isOpen,
+  onClose,
+  cart,
+  onUpdateQuantity,
   onRemove,
   onCheckout
-}: { 
-  isOpen: boolean; 
+}: {
+  isOpen: boolean;
   onClose: () => void;
   cart: CartItem[];
   onUpdateQuantity: (id: string, q: number) => void;
@@ -410,17 +395,16 @@ const CartDrawer = ({
             <div className="flex flex-col items-center justify-center h-full text-stone-400">
               <ShoppingBag size={64} className="mb-4 opacity-20" />
               <p className="text-lg">Your cart is empty</p>
-              <button onClick={onClose} className="mt-4 text-primary font-semibold">Start Browsing</button>
+              <button onClick={onClose} className="mt-4 text-[#35502F] font-semibold">Start Browsing</button>
             </div>
           ) : (
             cart.map((item) => (
               <div key={item.cartId} className="flex gap-4 bg-white p-4 rounded-xl shadow-sm border border-stone-100">
                 <div className="w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden bg-stone-100">
-                   {/* Thumbnail in cart */}
-                  <GenAIImage 
-                    query={item.menuItem.imageQuery} 
+                  <GenAIImage
+                    query={item.menuItem.imageQuery}
                     imageUrl={item.menuItem.imageUrl}
-                    alt={item.menuItem.name} 
+                    alt={item.menuItem.name}
                     className="w-full h-full object-cover"
                     category={item.menuItem.category}
                   />
@@ -430,27 +414,27 @@ const CartDrawer = ({
                     <h4 className="font-serif font-bold text-stone-800">{item.menuItem.name}</h4>
                     <span className="font-medium text-stone-900">{formatCurrency(item.price * item.quantity)}</span>
                   </div>
-                  {item.variantName && <p className="text-xs text-primary bg-primary/5 inline-block px-2 py-0.5 rounded mb-1">{item.variantName}</p>}
+                  {item.variantName && <p className="text-xs text-[#35502F] bg-[#35502F]/10 inline-block px-2 py-0.5 rounded mb-1">{item.variantName}</p>}
                   {item.notes && <p className="text-xs text-stone-500 italic mb-2">"{item.notes}"</p>}
-                  
+
                   <div className="flex items-center justify-between mt-2">
-                    <button 
+                    <button
                       onClick={() => onRemove(item.cartId)}
-                      className="text-xs text-red-400 hover:text-red-600 underline"
+                      className="text-xs text-red-500 hover:text-red-700 underline"
                     >
                       Remove
                     </button>
                     <div className="flex items-center bg-stone-50 rounded-lg border border-stone-200">
-                      <button 
+                      <button
                         onClick={() => onUpdateQuantity(item.cartId, Math.max(1, item.quantity - 1))}
-                        className="px-2 py-1 text-stone-600 hover:text-primary"
+                        className="px-2 py-1 text-stone-600 hover:text-[#35502F]"
                       >
                         <Minus size={14} />
                       </button>
                       <span className="text-sm font-medium w-6 text-center">{item.quantity}</span>
-                      <button 
+                      <button
                         onClick={() => onUpdateQuantity(item.cartId, item.quantity + 1)}
-                        className="px-2 py-1 text-stone-600 hover:text-primary"
+                        className="px-2 py-1 text-stone-600 hover:text-[#35502F]"
                       >
                         <Plus size={14} />
                       </button>
@@ -468,9 +452,9 @@ const CartDrawer = ({
               <span>Subtotal</span>
               <span>{formatCurrency(total)}</span>
             </div>
-            <button 
+            <button
               onClick={onCheckout}
-              className="w-full bg-primary text-white py-4 rounded-xl font-bold text-lg shadow-lg hover:bg-[#344d30] active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+              className="w-full bg-[#35502F] text-white py-4 rounded-xl font-bold text-lg shadow-lg hover:bg-[#2f4429] active:scale-[0.98] transition-all flex items-center justify-center gap-2"
             >
               Checkout <ChevronRight size={20} />
             </button>
@@ -481,14 +465,14 @@ const CartDrawer = ({
   );
 };
 
-const CheckoutModal = ({ 
-  isOpen, 
-  onClose, 
+const CheckoutModal = ({
+  isOpen,
+  onClose,
   cart,
   orderType
-}: { 
-  isOpen: boolean; 
-  onClose: () => void; 
+}: {
+  isOpen: boolean;
+  onClose: () => void;
   cart: CartItem[];
   orderType: OrderType;
 }) => {
@@ -502,12 +486,11 @@ const CheckoutModal = ({
     notes: ''
   });
 
-  // Load user details from local storage
   useEffect(() => {
     const saved = localStorage.getItem('baytouna_user');
     if (saved) {
       const parsed = JSON.parse(saved);
-      setUser(prev => ({ ...prev, ...parsed, orderType })); // keep current orderType
+      setUser(prev => ({ ...prev, ...parsed, orderType }));
     }
   }, [orderType]);
 
@@ -523,7 +506,6 @@ const CheckoutModal = ({
       return;
     }
 
-    // Save user details
     localStorage.setItem('baytouna_user', JSON.stringify(user));
 
     const link = generateWhatsAppLink(cart, user);
@@ -536,13 +518,13 @@ const CheckoutModal = ({
     <div className="fixed inset-0 z-[60] flex items-center justify-center px-4">
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
       <div className="bg-[#F9F8F4] w-full max-w-lg rounded-2xl shadow-2xl relative z-10 max-h-[90vh] overflow-y-auto no-scrollbar animate-slide-up">
-        
-        <div className="bg-primary px-6 py-6 rounded-t-2xl text-white">
+
+        <div className="bg-[#35502F] px-6 py-6 rounded-t-2xl text-white">
           <div className="flex justify-between items-center mb-2">
             <h2 className="font-display text-2xl font-bold">Checkout</h2>
             <button onClick={onClose} className="text-white/80 hover:text-white"><X size={24} /></button>
           </div>
-          <p className="text-primary/20 text-sm font-medium px-2 py-1 bg-white/20 inline-block rounded">
+          <p className="text-white/90 text-sm font-medium px-2 py-1 bg-white/20 inline-block rounded">
             {orderType} Order
           </p>
         </div>
@@ -550,22 +532,22 @@ const CheckoutModal = ({
         <div className="p-6 space-y-4">
           <div className="grid grid-cols-1 gap-4">
             <div>
-              <label className="block text-xs font-bold text-stone-500 uppercase mb-1">Full Name *</label>
-              <input 
-                type="text" 
-                value={user.name} 
-                onChange={e => setUser({...user, name: e.target.value})}
-                className="w-full p-3 rounded-lg border border-stone-200 bg-white focus:border-primary outline-none"
+              <label className="block text-xs font-bold text-stone-600 uppercase mb-1">Full Name *</label>
+              <input
+                type="text"
+                value={user.name}
+                onChange={e => setUser({ ...user, name: e.target.value })}
+                className="w-full p-3 rounded-lg border border-stone-200 bg-white focus:border-[#35502F] outline-none"
                 placeholder="John Doe"
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-stone-500 uppercase mb-1">Phone Number *</label>
-              <input 
-                type="tel" 
-                value={user.phone} 
-                onChange={e => setUser({...user, phone: e.target.value})}
-                className="w-full p-3 rounded-lg border border-stone-200 bg-white focus:border-primary outline-none"
+              <label className="block text-xs font-bold text-stone-600 uppercase mb-1">Phone Number *</label>
+              <input
+                type="tel"
+                value={user.phone}
+                onChange={e => setUser({ ...user, phone: e.target.value })}
+                className="w-full p-3 rounded-lg border border-stone-200 bg-white focus:border-[#35502F] outline-none"
                 placeholder="71 123 456"
               />
             </div>
@@ -573,66 +555,66 @@ const CheckoutModal = ({
 
           {orderType === 'Delivery' ? (
             <div className="space-y-4 pt-2">
-              <div className="flex items-center gap-2 text-primary font-medium border-b border-primary/10 pb-1">
+              <div className="flex items-center gap-2 text-[#35502F] font-medium border-b border-[#35502F]/10 pb-1">
                 <Truck size={18} /> Delivery Details
               </div>
               <div>
-                <label className="block text-xs font-bold text-stone-500 uppercase mb-1">Full Address *</label>
-                <textarea 
+                <label className="block text-xs font-bold text-stone-600 uppercase mb-1">Full Address *</label>
+                <textarea
                   value={user.address}
-                  onChange={e => setUser({...user, address: e.target.value})}
-                  className="w-full p-3 rounded-lg border border-stone-200 bg-white focus:border-primary outline-none resize-none"
+                  onChange={e => setUser({ ...user, address: e.target.value })}
+                  className="w-full p-3 rounded-lg border border-stone-200 bg-white focus:border-[#35502F] outline-none resize-none"
                   rows={2}
                   placeholder="Building, Floor, Street..."
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-stone-500 uppercase mb-1 flex items-center gap-1">
+                <label className="block text-xs font-bold text-stone-600 uppercase mb-1 flex items-center gap-1">
                   <MapPin size={12} /> Google Maps Link (Optional)
                 </label>
-                <input 
-                  type="url" 
+                <input
+                  type="url"
                   value={user.mapsLink}
-                  onChange={e => setUser({...user, mapsLink: e.target.value})}
-                  className="w-full p-3 rounded-lg border border-stone-200 bg-white focus:border-primary outline-none text-sm"
+                  onChange={e => setUser({ ...user, mapsLink: e.target.value })}
+                  className="w-full p-3 rounded-lg border border-stone-200 bg-white focus:border-[#35502F] outline-none text-sm"
                   placeholder="https://maps.google.com/..."
                 />
               </div>
             </div>
           ) : (
             <div className="space-y-4 pt-2">
-               <div className="flex items-center gap-2 text-primary font-medium border-b border-primary/10 pb-1">
+              <div className="flex items-center gap-2 text-[#35502F] font-medium border-b border-[#35502F]/10 pb-1">
                 <Clock size={18} /> Pickup Details
               </div>
               <div>
-                <label className="block text-xs font-bold text-stone-500 uppercase mb-1">Preferred Pickup Time</label>
-                <input 
-                  type="time" 
+                <label className="block text-xs font-bold text-stone-600 uppercase mb-1">Preferred Pickup Time</label>
+                <input
+                  type="time"
                   value={user.pickupTime}
-                  onChange={e => setUser({...user, pickupTime: e.target.value})}
-                  className="w-full p-3 rounded-lg border border-stone-200 bg-white focus:border-primary outline-none"
+                  onChange={e => setUser({ ...user, pickupTime: e.target.value })}
+                  className="w-full p-3 rounded-lg border border-stone-200 bg-white focus:border-[#35502F] outline-none"
                 />
               </div>
             </div>
           )}
 
           <div>
-             <label className="block text-xs font-bold text-stone-500 uppercase mb-1">Order Notes (Optional)</label>
-             <textarea 
-                value={user.notes}
-                onChange={e => setUser({...user, notes: e.target.value})}
-                className="w-full p-3 rounded-lg border border-stone-200 bg-white focus:border-primary outline-none resize-none"
-                rows={2}
-                placeholder="Any special requests for the whole order..."
-              />
+            <label className="block text-xs font-bold text-stone-600 uppercase mb-1">Order Notes (Optional)</label>
+            <textarea
+              value={user.notes}
+              onChange={e => setUser({ ...user, notes: e.target.value })}
+              className="w-full p-3 rounded-lg border border-stone-200 bg-white focus:border-[#35502F] outline-none resize-none"
+              rows={2}
+              placeholder="Any special requests for the whole order..."
+            />
           </div>
 
           <div className="bg-stone-50 p-4 rounded-xl border border-stone-100 flex justify-between items-center mt-4">
-             <span className="font-bold text-stone-700">Total Amount</span>
-             <span className="font-display text-2xl font-bold text-primary">{formatCurrency(total)}</span>
+            <span className="font-bold text-stone-700">Total Amount</span>
+            <span className="font-display text-2xl font-bold text-[#35502F]">{formatCurrency(total)}</span>
           </div>
 
-          <button 
+          <button
             onClick={handleSubmit}
             className="w-full bg-[#25D366] hover:bg-[#20b858] text-white py-4 rounded-xl font-bold text-lg shadow-lg flex items-center justify-center gap-3 transition-colors mt-2"
           >
@@ -652,37 +634,32 @@ function App() {
   const [orderType, setOrderType] = useState<OrderType>('Delivery');
   const [activeCategory, setActiveCategory] = useState<string>('Popular');
   const [searchQuery, setSearchQuery] = useState('');
-  
+
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
-  
+
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 
-  // Load cart
   useEffect(() => {
     const savedCart = localStorage.getItem('baytouna_cart');
     if (savedCart) setCart(JSON.parse(savedCart));
   }, []);
 
-  // Save cart
   useEffect(() => {
     localStorage.setItem('baytouna_cart', JSON.stringify(cart));
   }, [cart]);
 
-  // Derived Data: Filtered Items
   const filteredItems = useMemo(() => {
     const today = getDayName(new Date()) as WeekDay;
-    
-    // Search Mode
+
     if (searchQuery.trim()) {
-      return MENU_ITEMS.filter(item => 
-        item.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      return MENU_ITEMS.filter(item =>
+        item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.description?.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
 
-    // Category Mode
     if (activeCategory === 'Popular') {
       return MENU_ITEMS.filter(item => item.isPopular).slice(0, 6);
     }
@@ -692,22 +669,19 @@ function App() {
     }
 
     return MENU_ITEMS.filter(item => {
-      // Filter by category
       if (item.category !== activeCategory) return false;
-      
-      // Filter by availability for Daily Dishes category specifically
+
       if (activeCategory === 'Daily Dishes' && item.availability) {
         return item.availability.includes('Daily') || item.availability.includes(today);
       }
-      
+
       return true;
     });
   }, [activeCategory, searchQuery]);
 
   const addToCart = (item: CartItem) => {
     setCart(prev => [...prev, item]);
-    setSelectedItem(null); // Close modal
-    // Optional: Toast notification here
+    setSelectedItem(null);
   };
 
   const updateQuantity = (cartId: string, q: number) => {
@@ -723,16 +697,14 @@ function App() {
 
   return (
     <div className="min-h-screen pb-24 font-sans text-stone-800 bg-[#F9F8F4]">
-      {/* Search Overlay Helper (if query exists) */}
       {searchQuery && (
         <div className="fixed top-24 left-0 right-0 z-30 bg-[#F9F8F4] p-2 text-center text-sm text-stone-500 border-b">
-           Showing results for "{searchQuery}" <button onClick={() => setSearchQuery('')} className="text-primary font-bold underline ml-2">Clear</button>
+          Showing results for "{searchQuery}" <button onClick={() => setSearchQuery('')} className="text-[#35502F] font-bold underline ml-2">Clear</button>
         </div>
       )}
 
       <Hero orderType={orderType} setOrderType={setOrderType} onSearch={setSearchQuery} />
-      
-      {/* Only show categories if not searching */}
+
       {!searchQuery && <CategoryNav activeCategory={activeCategory} onSelect={setActiveCategory} />}
 
       <main className="max-w-7xl mx-auto px-4 py-6">
@@ -741,59 +713,57 @@ function App() {
             {searchQuery ? 'Search Results' : activeCategory}
           </h2>
           {!searchQuery && activeCategory === 'Today’s Specials' && (
-             <span className="px-3 py-1 bg-secondary/10 text-secondary text-xs font-bold rounded-full uppercase tracking-wider">
-               {getDayName(new Date())}
-             </span>
+            <span className="px-3 py-1 bg-[#9A6B3A]/10 text-[#9A6B3A] text-xs font-bold rounded-full uppercase tracking-wider">
+              {getDayName(new Date())}
+            </span>
           )}
         </div>
 
         {filteredItems.length === 0 ? (
-           <div className="text-center py-20 opacity-50">
-             <Info className="mx-auto mb-2 h-10 w-10" />
-             <p>No items found available for this selection.</p>
-           </div>
+          <div className="text-center py-20 opacity-50">
+            <Info className="mx-auto mb-2 h-10 w-10" />
+            <p>No items found available for this selection.</p>
+          </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
             {filteredItems.map(item => (
-              <MenuCard 
-                key={item.id} 
-                item={item} 
-                onClick={() => setSelectedItem(item)} 
+              <MenuCard
+                key={item.id}
+                item={item}
+                onClick={() => setSelectedItem(item)}
               />
             ))}
           </div>
         )}
       </main>
 
-      {/* Floating Cart Bar (Mobile/Desktop sticky footer) */}
       {cartCount > 0 && (
         <div className="fixed bottom-6 left-4 right-4 md:left-auto md:right-8 md:w-96 z-40">
-           <button 
-             onClick={() => setIsCartOpen(true)}
-             className="w-full bg-stone-900 text-cream p-4 rounded-2xl shadow-xl flex justify-between items-center hover:scale-[1.02] transition-transform animate-slide-up"
-           >
-             <div className="flex items-center gap-3">
-               <div className="bg-primary text-white w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm">
-                 {cartCount}
-               </div>
-               <span className="font-medium">View Order</span>
-             </div>
-             <div className="font-display font-bold text-xl">
-               {formatCurrency(cartTotal)}
-             </div>
-           </button>
+          <button
+            onClick={() => setIsCartOpen(true)}
+            className="w-full bg-stone-900 text-white p-4 rounded-2xl shadow-xl flex justify-between items-center hover:scale-[1.02] transition-transform animate-slide-up"
+          >
+            <div className="flex items-center gap-3">
+              <div className="bg-[#35502F] text-white w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm">
+                {cartCount}
+              </div>
+              <span className="font-medium text-white">View Order</span>
+            </div>
+            <div className="font-display font-bold text-xl text-white">
+              {formatCurrency(cartTotal)}
+            </div>
+          </button>
         </div>
       )}
 
-      {/* Modals */}
-      <ItemModal 
-        item={selectedItem} 
-        isOpen={!!selectedItem} 
-        onClose={() => setSelectedItem(null)} 
-        onAddToCart={addToCart} 
+      <ItemModal
+        item={selectedItem}
+        isOpen={!!selectedItem}
+        onClose={() => setSelectedItem(null)}
+        onAddToCart={addToCart}
       />
 
-      <CartDrawer 
+      <CartDrawer
         isOpen={isCartOpen}
         onClose={() => setIsCartOpen(false)}
         cart={cart}
@@ -805,7 +775,7 @@ function App() {
         }}
       />
 
-      <CheckoutModal 
+      <CheckoutModal
         isOpen={isCheckoutOpen}
         onClose={() => setIsCheckoutOpen(false)}
         cart={cart}
