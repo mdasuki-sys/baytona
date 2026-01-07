@@ -167,8 +167,8 @@ const CategoryNav = ({ activeCategory, onSelect }: { activeCategory: string; onS
             onClick={() => onSelect(cat)}
             className={`px-5 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
               activeCategory === cat 
-                ? 'bg-primary text-white shadow-md transform scale-105' 
-                : 'bg-white text-stone-600 border border-stone-200 hover:border-primary/30 hover:bg-primary/5'
+                ? 'bg-black text-white shadow-md transform scale-105' 
+                : 'bg-white text-stone-700 border border-stone-200 hover:border-black/30 hover:bg-black/5'
             }`}
           >
             {cat}
